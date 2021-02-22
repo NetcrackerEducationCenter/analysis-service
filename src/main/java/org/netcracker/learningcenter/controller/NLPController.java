@@ -33,7 +33,7 @@ public class NLPController {
     private static final String ACCURACY_PATH = "accuracy";
     private static final String MIN_SENTENSE_NUMBERS_PATH = "minSentenceNumbers";
     private static final String TOP_WORDS_COUNT_PATH = "topWordsCount";
-    private static final String DATA_SOURCE_PATH = "dataSource";
+    private static final String REQUEST_ID = "requestId";
 
     @Autowired
     public NLPController(NLPService nlpService) {
@@ -47,8 +47,8 @@ public class NLPController {
         JsonNode accuracyNode = jsonNode.path(ALANALYSIS_PARAM_PATH).path(ACCURACY_PATH);
         JsonNode sentenceNumbersNode = jsonNode.path(ALANALYSIS_PARAM_PATH).path(MIN_SENTENSE_NUMBERS_PATH);
         JsonNode topWordCountNode = jsonNode.path(ALANALYSIS_PARAM_PATH).path(TOP_WORDS_COUNT_PATH);
-        JsonNode dataSourceNode = jsonNode.path(DATA_SOURCE_PATH);
-        Validations.checkJsonNode(keyWordsNode, dataSourceNode);
+        JsonNode requestId = jsonNode.path(REQUEST_ID);
+        Validations.checkJsonNode(keyWordsNode, requestId);
 
         Iterator<JsonNode> iterator = keyWordsNode.elements();
         List<String> keyWordsList = new ArrayList<>();
