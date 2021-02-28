@@ -1,6 +1,7 @@
 package org.netcracker.learningcenter.model;
 
 import nonapi.io.github.classgraph.json.Id;
+import org.netcracker.learningcenter.utils.Status;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -12,18 +13,20 @@ public class Report {
     private String requestId;
     private String date;
     private Set<String> dataSource;
+    private Status status;
     private List<String> keywords;
     private List<String> text;
 
     public Report() {
     }
 
-    public Report(String requestId, String date, List<String> keywords, List<String> text,Set<String> dataSource) {
+    public Report(String requestId, String date, List<String> keywords, List<String> text,Set<String> dataSource,Status status) {
         this.requestId = requestId;
         this.date = date;
         this.keywords = keywords;
         this.text = text;
         this.dataSource = dataSource;
+        this.status = status;
     }
 
     public String getRequestId() {
@@ -67,6 +70,14 @@ public class Report {
 
     public void setDataSource(Set<String> dataSource) {
         this.dataSource = dataSource;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     @Override
