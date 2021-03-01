@@ -18,9 +18,6 @@ import java.util.*;
 
 @RestController
 public class NLPController {
-    private final NLPService nlpService;
-    private final ReportService reportService;
-    private final ElasticsearchService elasticsearchService;
     /**
      * Number of decimal places to round the average sentence weight
      */
@@ -38,6 +35,9 @@ public class NLPController {
     private static final String TOP_WORDS_COUNT_PATH = "topWordsCount";
     private static final String REQUEST_ID = "requestId";
     private static final String SOURCE = "source";
+    private final NLPService nlpService;
+    private final ReportService reportService;
+    private final ElasticsearchService elasticsearchService;
 
     @Autowired
     public NLPController(NLPService nlpService, ReportService reportService, ElasticsearchService elasticsearchService) {
