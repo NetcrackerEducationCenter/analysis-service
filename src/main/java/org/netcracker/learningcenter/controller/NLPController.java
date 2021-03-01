@@ -1,14 +1,10 @@
 package org.netcracker.learningcenter.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.netcracker.educationcenter.elasticsearch.database.operations.ElasticsearchOperationsException;
-import org.netcracker.educationcenter.elasticsearch.search.SearchException;
-import org.netcracker.learningcenter.exceptions.ResourceNotFoundException;
 import org.netcracker.learningcenter.model.Report;
 import org.netcracker.learningcenter.service.ElasticsearchService;
 import org.netcracker.learningcenter.service.NLPService;
 import org.netcracker.learningcenter.service.ReportService;
-import org.netcracker.learningcenter.utils.AnalysisStatus;
 import org.netcracker.learningcenter.utils.AnalysisUtils;
 import org.netcracker.learningcenter.utils.Status;
 import org.netcracker.learningcenter.utils.Validations;
@@ -61,7 +57,7 @@ public class NLPController {
 
         List<String> texts = new ArrayList<>();
         Set<String> dataSource = new HashSet<>();
-        AnalysisStatus.getInstance().setStatus(requestId.asText(), Status.IN_PROCESS);
+        reportService.setStatus(requestId.asText(), Status.IN_PROCESS);
         List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId.asText());
         for (JsonNode node : dataFromElastic) {
             dataSource.add(node.path(SOURCE).asText());
@@ -87,12 +83,12 @@ public class NLPController {
         report.setText(searchInfo);
         report.setStatus(Status.COMPLETED);
         reportService.saveReport(report);
-        AnalysisStatus.getInstance().setStatus(requestId.asText(), Status.COMPLETED);
+        reportService.setStatus(requestId.asText(), Status.COMPLETED);
     }
 
     @GetMapping("/status/{requestId}")
     public Status getAnalysisStatus(@PathVariable String requestId) {
-        return AnalysisStatus.getInstance().getStatus(requestId);
+        return reportService.getStatus(requestId);
     }
 
     @GetMapping("/dataByRequestId/{requestId}")
