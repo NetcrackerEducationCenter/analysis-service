@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static org.netcracker.learningcenter.utils.AnalysisUtils.*;
+
 @RestController
 public class NLPController {
     /**
@@ -28,13 +30,6 @@ public class NLPController {
      */
     private static final int MIN_SENTENSE_NUMBERS = 10;
     private static final int TOP_WORDS_COUNT = 10;
-    private static final String KEY_WORDS_PATH = "keyWords";
-    private static final String ALANALYSIS_PARAM_PATH = "analysisParam";
-    private static final String ACCURACY_PATH = "accuracy";
-    private static final String MIN_SENTENSE_NUMBERS_PATH = "minSentenceNumbers";
-    private static final String TOP_WORDS_COUNT_PATH = "topWordsCount";
-    private static final String REQUEST_ID = "requestId";
-    private static final String SOURCE = "source";
     private final NLPService nlpService;
     private final ReportService reportService;
     private final ElasticsearchService elasticsearchService;

@@ -10,6 +10,13 @@ public class AnalysisUtils {
     private static final String TEXT = "text";
     private static final String ISSUE_TITLE = "issueTitle";
     private static final String ISSUE_BODY = "issueBody";
+    public static final String KEY_WORDS_PATH = "keyWords";
+    public static final String ALANALYSIS_PARAM_PATH = "analysisParam";
+    public static final String ACCURACY_PATH = "accuracy";
+    public static final String MIN_SENTENSE_NUMBERS_PATH = "minSentenceNumbers";
+    public static final String TOP_WORDS_COUNT_PATH = "topWordsCount";
+    public static final String REQUEST_ID = "requestId";
+    public static final String SOURCE = "source";
 
     public static String getTextFromJsonNode(JsonNode node) {
         String resultText = "";
