@@ -1,8 +1,10 @@
 package org.netcracker.learningcenter.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
+
 
 public class AnalysisUtils {
     private static final String TYPE = "type";
@@ -37,4 +39,5 @@ public class AnalysisUtils {
         }
         return resultText;
     }
+
 }

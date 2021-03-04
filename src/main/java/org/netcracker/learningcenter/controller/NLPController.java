@@ -2,10 +2,8 @@ package org.netcracker.learningcenter.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.netcracker.learningcenter.model.Report;
-import org.netcracker.learningcenter.service.ElasticsearchService;
 import org.netcracker.learningcenter.service.NLPService;
 import org.netcracker.learningcenter.service.ReportService;
-import org.netcracker.learningcenter.utils.AnalysisUtils;
 import org.netcracker.learningcenter.utils.Status;
 import org.netcracker.learningcenter.utils.Validations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.netcracker.learningcenter.utils.AnalysisUtils.*;
@@ -32,13 +29,11 @@ public class NLPController {
     private static final int TOP_WORDS_COUNT = 10;
     private final NLPService nlpService;
     private final ReportService reportService;
-    private final ElasticsearchService elasticsearchService;
 
     @Autowired
-    public NLPController(NLPService nlpService, ReportService reportService, ElasticsearchService elasticsearchService) {
+    public NLPController(NLPService nlpService, ReportService reportService) {
         this.nlpService = nlpService;
         this.reportService = reportService;
-        this.elasticsearchService = elasticsearchService;
     }
 
     @PostMapping(value = "/analysis", produces = "application/json", consumes = "application/json")
@@ -49,16 +44,6 @@ public class NLPController {
         JsonNode topWordCountNode = jsonNode.path(ALANALYSIS_PARAM_PATH).path(TOP_WORDS_COUNT_PATH);
         JsonNode requestId = jsonNode.path(REQUEST_ID);
         Validations.checkJsonNode(keyWordsNode, requestId);
-
-        List<String> texts = new ArrayList<>();
-        Set<String> dataSource = new HashSet<>();
-        reportService.setStatus(requestId.asText(), Status.IN_PROCESS);
-        List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId.asText());
-        for (JsonNode node : dataFromElastic) {
-            dataSource.add(node.path(SOURCE).asText());
-            texts.add(AnalysisUtils.getTextFromJsonNode(node));
-        }
-
         Iterator<JsonNode> iterator = keyWordsNode.elements();
         List<String> keyWordsList = new ArrayList<>();
         while (iterator.hasNext()) {
@@ -67,18 +52,7 @@ public class NLPController {
         int accuracy = accuracyNode.isMissingNode() ? ACCURACY : accuracyNode.asInt();
         int sentenceNumbers = sentenceNumbersNode.isMissingNode() ? MIN_SENTENSE_NUMBERS : sentenceNumbersNode.asInt();
         int topWordCount = topWordCountNode.isMissingNode() ? TOP_WORDS_COUNT : topWordCountNode.asInt();
-        Report report = new Report();
-        report.setKeywords(keyWordsList);
-        report.setStatus(Status.IN_PROCESS);
-        report.setRequestId(requestId.asText());
-        report.setDataSource(dataSource);
-        reportService.saveReport(report);
-        List<String> searchInfo = nlpService.searchInformation(keyWordsList, texts, accuracy, sentenceNumbers, topWordCount);
-        report.setDate(new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date()));
-        report.setText(searchInfo);
-        report.setStatus(Status.COMPLETED);
-        reportService.saveReport(report);
-        reportService.setStatus(requestId.asText(), Status.COMPLETED);
+        nlpService.analyzingDataFromElasticsearch(keyWordsList, accuracy, sentenceNumbers, topWordCount, requestId.asText());
     }
 
     @GetMapping("/status/{requestId}")

@@ -6,10 +6,7 @@ import org.netcracker.learningcenter.utils.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ReportService {
@@ -34,11 +31,23 @@ public class ReportService {
         return reportRepository.findAll();
     }
 
-    public void updateReport(String id, String text) {
+    public void createReport(List<String> keywords, String requestId, Set<String> dataSource, Status status) {
+        Report report = new Report();
+        report.setKeywords(keywords);
+        report.setStatus(status);
+        report.setRequestId(requestId);
+        report.setDataSource(dataSource);
+        reportRepository.save(report);
+    }
+
+    public void updateReport(String id, List<String> text, Status status, String date) {
         Optional<Report> report = reportRepository.findByRequestId(id);
         if (report.isPresent()) {
-            report.get().addToText(text);
-            reportRepository.save(report.get());
+            Report r = report.get();
+            r.setText(text);
+            r.setStatus(status);
+            r.setDate(date);
+            reportRepository.save(r);
         }
 
     }

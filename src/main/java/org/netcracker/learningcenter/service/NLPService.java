@@ -1,29 +1,56 @@
 package org.netcracker.learningcenter.service;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.CoreMap;
 import org.apache.commons.math3.util.Precision;
+import org.netcracker.learningcenter.utils.AnalysisUtils;
 import org.netcracker.learningcenter.utils.Pipeline;
 import org.netcracker.learningcenter.utils.FrequencyTextAnalysis;
+import org.netcracker.learningcenter.utils.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import static org.netcracker.learningcenter.utils.AnalysisUtils.SOURCE;
+
 
 @Service
 public class NLPService {
 
     private final FrequencyTextAnalysis frequencyTextAnalysis;
+    private final ReportService reportService;
+    private final ElasticsearchService elasticsearchService;
     private final Pipeline pipeline;
 
     @Autowired
-    public NLPService(FrequencyTextAnalysis frequencyTextAnalysis, Pipeline pipeline) {
+    public NLPService(FrequencyTextAnalysis frequencyTextAnalysis, ReportService reportService, ElasticsearchService elasticsearchService, Pipeline pipeline) {
         this.frequencyTextAnalysis = frequencyTextAnalysis;
+        this.reportService = reportService;
+        this.elasticsearchService = elasticsearchService;
         this.pipeline = pipeline;
+    }
+
+    public void analyzingDataFromElasticsearch(List<String> keywords, int accuracy, int minSentenceNumbers, int topWordsCount, String requestId) throws Exception {
+        List<String> texts = new ArrayList<>();
+        Set<String> dataSource = new HashSet<>();
+        reportService.setStatus(requestId, Status.IN_PROCESS);
+        List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId);
+        for (JsonNode node : dataFromElastic) {
+            dataSource.add(node.path(SOURCE).asText());
+            texts.add(AnalysisUtils.getTextFromJsonNode(node));
+        }
+        reportService.createReport(keywords, requestId, dataSource, Status.IN_PROCESS);
+        List<String> searchInfo = searchInformation(keywords, texts, accuracy, minSentenceNumbers, topWordsCount);
+        String endDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
+        reportService.updateReport(requestId, searchInfo, Status.COMPLETED, endDate);
+        reportService.setStatus(requestId, Status.COMPLETED);
     }
 
     /**
