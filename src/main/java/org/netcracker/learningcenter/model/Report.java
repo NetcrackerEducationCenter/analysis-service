@@ -10,6 +10,7 @@ import java.util.Set;
 @Document
 public class Report {
     @Id
+    private String id;
     private String requestId;
     private String date;
     private Set<String> dataSource;
@@ -20,7 +21,7 @@ public class Report {
     public Report() {
     }
 
-    public Report(String requestId, String date, List<String> keywords, List<String> text,Set<String> dataSource,Status status) {
+    public Report(String requestId, String date, List<String> keywords, List<String> text, Set<String> dataSource, Status status) {
         this.requestId = requestId;
         this.date = date;
         this.keywords = keywords;
@@ -60,6 +61,7 @@ public class Report {
     public void setText(List<String> text) {
         this.text = text;
     }
+
     public void addToText(String text) {
         this.text.add(text);
     }

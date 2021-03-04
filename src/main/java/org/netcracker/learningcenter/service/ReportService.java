@@ -43,11 +43,10 @@ public class ReportService {
     public void updateReport(String id, List<String> text, Status status, String date) {
         Optional<Report> report = reportRepository.findByRequestId(id);
         if (report.isPresent()) {
-            Report r = report.get();
-            r.setText(text);
-            r.setStatus(status);
-            r.setDate(date);
-            reportRepository.save(r);
+            report.get().setText(text);
+            report.get().setStatus(status);
+            report.get().setDate(date);
+            reportRepository.save(report.get());
         }
 
     }

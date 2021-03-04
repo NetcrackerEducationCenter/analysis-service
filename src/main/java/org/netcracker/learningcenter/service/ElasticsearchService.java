@@ -2,19 +2,13 @@ package org.netcracker.learningcenter.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.netcracker.educationcenter.elasticsearch.connection.Connection;
-import org.netcracker.educationcenter.elasticsearch.database.operations.ElasticsearchOperations;
-import org.netcracker.educationcenter.elasticsearch.database.operations.FTPFileObjectOperations;
-import org.netcracker.educationcenter.elasticsearch.database.operations.JiraIssueOperations;
-import org.netcracker.educationcenter.elasticsearch.search.DocumentSearch;
 import org.netcracker.educationcenter.elasticsearch.search.FTPFileObjectSearch;
 import org.netcracker.educationcenter.elasticsearch.search.JiraIssueSearch;
-import org.netcracker.educationcenter.elasticsearch.search.SearchException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 @Service
