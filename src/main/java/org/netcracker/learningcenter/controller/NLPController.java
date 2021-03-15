@@ -1,14 +1,20 @@
 package org.netcracker.learningcenter.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.netcracker.learningcenter.model.Report;
 import org.netcracker.learningcenter.service.NLPService;
+import org.netcracker.learningcenter.service.ProducerService;
 import org.netcracker.learningcenter.service.ReportService;
+import org.netcracker.learningcenter.utils.DataCollectorRequest;
 import org.netcracker.learningcenter.utils.Status;
 import org.netcracker.learningcenter.utils.Validations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.TopicPartition;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -29,11 +35,18 @@ public class NLPController {
     private static final int TOP_WORDS_COUNT = 10;
     private final NLPService nlpService;
     private final ReportService reportService;
+    private final ProducerService producerService;
 
     @Autowired
-    public NLPController(NLPService nlpService, ReportService reportService) {
+    public NLPController(NLPService nlpService, ReportService reportService, ProducerService producerService) {
         this.nlpService = nlpService;
         this.reportService = reportService;
+        this.producerService = producerService;
+    }
+
+    @KafkaListener(topics = "${kafka.dc-topic}")
+    public void analyzingDataFromElasticsearch(DataCollectorRequest request) throws Exception {
+        nlpService.analyzingDataFromElasticsearch(request.getKeywords(), ACCURACY, MIN_SENTENSE_NUMBERS, TOP_WORDS_COUNT, request.getRequestId());
     }
 
     @PostMapping(value = "/analysis", produces = "application/json", consumes = "application/json")
@@ -60,12 +73,11 @@ public class NLPController {
         return reportService.getStatus(requestId);
     }
 
-    @GetMapping("/dataByRequestId/{requestId}")
-    public ResponseEntity<?> getDataByRequestId(@PathVariable String requestId) {
+    @KafkaListener(topics = "${kafka.getReport-topic}", groupId = "${kafka.consumer.report-group-id}")
+    public void getDataByRequestId(String requestId) {
         Optional<Report> data = reportService.findByRequestId(requestId);
         if (data.isPresent()) {
-            return new ResponseEntity<>(data.get(), HttpStatus.OK);
+            producerService.sendReport(data.get());
         }
-        return new ResponseEntity<>("No report found with this request id", HttpStatus.NOT_FOUND);
     }
 }

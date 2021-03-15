@@ -1,7 +1,9 @@
 package org.netcracker.learningcenter.service;
 
 import org.apache.log4j.Logger;
+import org.netcracker.learningcenter.model.Report;
 import org.netcracker.learningcenter.utils.AnalyticsServiceResponse;
+import org.netcracker.learningcenter.utils.DataCollectorRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -14,12 +16,17 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 public class ProducerService {
     private static final Logger LOGGER = Logger.getRootLogger();
     private final KafkaTemplate<String, AnalyticsServiceResponse> kafkaTemplate;
+    private final KafkaTemplate<String, Report> reportKafkaTemplate;
     @Value("${kafka.analysis-topic}")
     private String topic;
+    @Value("${kafka.reports-topic}")
+    private String reportTopic;
+
 
     @Autowired
-    public ProducerService(KafkaTemplate<String, AnalyticsServiceResponse> kafkaTemplate) {
+    public ProducerService(KafkaTemplate<String, AnalyticsServiceResponse> kafkaTemplate, KafkaTemplate<String, Report> reportKafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
+        this.reportKafkaTemplate = reportKafkaTemplate;
     }
 
     public void sendMessage(AnalyticsServiceResponse message) {
@@ -35,6 +42,22 @@ public class ProducerService {
             @Override
             public void onSuccess(SendResult<String, AnalyticsServiceResponse> stringStringSendResult) {
                 LOGGER.info("Sent message=[" + message.toString() + "] with offset=[" + stringStringSendResult.getRecordMetadata().offset() + "]");
+            }
+        });
+
+    }
+
+    public void sendReport(Report report) {
+        ListenableFuture<SendResult<String, Report>> future = reportKafkaTemplate.send(reportTopic, report);
+        future.addCallback(new ListenableFutureCallback<SendResult<String, Report>>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+                LOGGER.info("Unable to send message=[" + report.toString() + "] due to : " + throwable.getMessage());
+            }
+
+            @Override
+            public void onSuccess(SendResult<String, Report> stringReportSendResult) {
+                LOGGER.info("Sent message=[" + report.toString() + "] with offset=[" + stringReportSendResult.getRecordMetadata().offset() + "]");
             }
         });
 
