@@ -11,10 +11,7 @@ import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.CoreMap;
 import org.apache.commons.math3.util.Precision;
-import org.netcracker.learningcenter.utils.AnalysisUtils;
-import org.netcracker.learningcenter.utils.Pipeline;
-import org.netcracker.learningcenter.utils.FrequencyTextAnalysis;
-import org.netcracker.learningcenter.utils.Status;
+import org.netcracker.learningcenter.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,18 +25,22 @@ public class NLPService {
     private final ReportService reportService;
     private final ElasticsearchService elasticsearchService;
     private final Pipeline pipeline;
+    private final ProducerService producerService;
 
     @Autowired
-    public NLPService(FrequencyTextAnalysis frequencyTextAnalysis, ReportService reportService, ElasticsearchService elasticsearchService, Pipeline pipeline) {
+    public NLPService(FrequencyTextAnalysis frequencyTextAnalysis, ReportService reportService, ElasticsearchService elasticsearchService, Pipeline pipeline, ProducerService producerService) {
         this.frequencyTextAnalysis = frequencyTextAnalysis;
         this.reportService = reportService;
         this.elasticsearchService = elasticsearchService;
         this.pipeline = pipeline;
+        this.producerService = producerService;
     }
 
     public void analyzingDataFromElasticsearch(List<String> keywords, int accuracy, int minSentenceNumbers, int topWordsCount, String requestId) throws Exception {
         List<String> texts = new ArrayList<>();
         Set<String> dataSource = new HashSet<>();
+        String startDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
+        producerService.sendMessage(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate));
         reportService.setStatus(requestId, Status.IN_PROCESS);
         List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId);
         for (JsonNode node : dataFromElastic) {
@@ -50,6 +51,7 @@ public class NLPService {
         List<String> searchInfo = searchInformation(keywords, texts, accuracy, minSentenceNumbers, topWordsCount);
         String endDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         reportService.updateReport(requestId, searchInfo, Status.COMPLETED, endDate);
+        producerService.sendMessage(new AnalyticsServiceResponse(requestId, Status.COMPLETED, keywords, endDate));
         reportService.setStatus(requestId, Status.COMPLETED);
     }
 
