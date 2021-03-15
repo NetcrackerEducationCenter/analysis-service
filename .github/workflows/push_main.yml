@@ -55,4 +55,3 @@ jobs:
             docker tag docker.pkg.github.com/netcracker-education-center/analysis-service/analysis_service:latest netcracker/analysis_service:latest
             # -d means that container starts in detached mode or in the background
             docker run -m 128m -d --name analysis_service -p 5005:5005 -p 9125:9125 netcracker/analysis_service:latest -v netcracker/education-center/collect-and-search/analysis-service/log:/log
-
