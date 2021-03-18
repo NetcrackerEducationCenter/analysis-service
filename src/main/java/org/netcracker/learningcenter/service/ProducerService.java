@@ -35,13 +35,13 @@ public class ProducerService {
 
             @Override
             public void onFailure(Throwable throwable) {
-                LOGGER.info("Unable to send message=[" + message.toString() + "] due to : " + throwable.getMessage());
+                LOGGER.error("Unable to send message=[ RequestId: " + message.getRequestId() + " status: " + message.getStatus() + "] due to : " + throwable.getMessage());
 
             }
 
             @Override
             public void onSuccess(SendResult<String, AnalyticsServiceResponse> stringStringSendResult) {
-                LOGGER.info("Sent message=[" + message.toString() + "] with offset=[" + stringStringSendResult.getRecordMetadata().offset() + "]");
+                LOGGER.info("Sent message=[ RequestId: " + message.getRequestId() + " status: " + message.getStatus() + "] with offset=[" + stringStringSendResult.getRecordMetadata().offset() + "]");
             }
         });
 
@@ -52,12 +52,12 @@ public class ProducerService {
         future.addCallback(new ListenableFutureCallback<SendResult<String, Report>>() {
             @Override
             public void onFailure(Throwable throwable) {
-                LOGGER.info("Unable to send message=[" + report.toString() + "] due to : " + throwable.getMessage());
+                LOGGER.error("Unable to send message=[Report with requestId : " + report.getRequestId() + "] due to : " + throwable.getMessage());
             }
 
             @Override
             public void onSuccess(SendResult<String, Report> stringReportSendResult) {
-                LOGGER.info("Sent message=[" + report.toString() + "] with offset=[" + stringReportSendResult.getRecordMetadata().offset() + "]");
+                LOGGER.info("Sent message=[Report with requestId : " + report.getRequestId() + "] with offset=[" + stringReportSendResult.getRecordMetadata().offset() + "]");
             }
         });
 
