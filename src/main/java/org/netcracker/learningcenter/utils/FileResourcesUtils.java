@@ -10,7 +10,7 @@ import java.util.List;
 public class FileResourcesUtils {
     public static List<String> readListFromFile(String filename) throws IOException {
         List<String> list = new ArrayList();
-        InputStream inputStream = Class.class.getResourceAsStream(filename);
+        InputStream inputStream = FileResourcesUtils.class.getResourceAsStream(filename);
         if (inputStream == null) {
             throw new IllegalArgumentException("File" + filename + " not found! ");
         } else {
