@@ -1,5 +1,6 @@
 package org.netcracker.learningcenter.utils;
 
+import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.stats.ClassicCounter;
@@ -12,6 +13,7 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -25,8 +27,7 @@ public class FrequencyTextAnalysis {
     private List<String> stopWords;
 
     public FrequencyTextAnalysis(@Value("${stop.words.file}") String pathToStopWordsFile) throws IOException {
-        File words = ResourceUtils.getFile(pathToStopWordsFile);
-        stopWords = Files.readAllLines(words.toPath());
+        stopWords = new FileResourcesUtils().readListFromFile(pathToStopWordsFile);
     }
 
     /**
