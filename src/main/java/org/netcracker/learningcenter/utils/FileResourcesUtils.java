@@ -10,12 +10,15 @@ import java.util.List;
 public class FileResourcesUtils {
     public static List<String> readListFromFile(String filename) throws IOException {
         List<String> list = new ArrayList();
-        ClassLoader classLoader = FileResourcesUtils.class.getClassLoader();
-        try (InputStream inputStream = classLoader.getResourceAsStream(filename);
-             BufferedReader r = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line;
-            while ((line = r.readLine()) != null) {
-                list.add(line);
+        InputStream inputStream = Class.class.getResourceAsStream(filename);
+        if (inputStream == null) {
+            throw new IllegalArgumentException("File" + filename + " not found! ");
+        } else {
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(inputStream))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    list.add(line);
+                }
             }
         }
         return list;
