@@ -3,7 +3,9 @@ package org.netcracker.learningcenter.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class AnalysisUtils {
@@ -39,5 +41,4 @@ public class AnalysisUtils {
         }
         return resultText;
     }
-
 }
