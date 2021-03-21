@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileResourcesUtils {
-    public List<String> readListFromFile(String filename) throws IOException {
+    public static List<String> readListFromFile(String filename) throws IOException {
         List<String> list = new ArrayList();
-        ClassLoader classLoader = getClass().getClassLoader();
+        ClassLoader classLoader = FileResourcesUtils.class.getClassLoader();
         try (InputStream inputStream = classLoader.getResourceAsStream(filename);
              BufferedReader r = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;

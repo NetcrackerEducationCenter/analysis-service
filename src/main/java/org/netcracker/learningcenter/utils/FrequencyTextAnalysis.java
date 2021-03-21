@@ -27,7 +27,7 @@ public class FrequencyTextAnalysis {
     private List<String> stopWords;
 
     public FrequencyTextAnalysis(@Value("${stop.words.file}") String pathToStopWordsFile) throws IOException {
-        stopWords = new FileResourcesUtils().readListFromFile(pathToStopWordsFile);
+        stopWords = FileResourcesUtils.readListFromFile(pathToStopWordsFile);
     }
 
     /**
