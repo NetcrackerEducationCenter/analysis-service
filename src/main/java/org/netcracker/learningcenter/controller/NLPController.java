@@ -1,8 +1,10 @@
 package org.netcracker.learningcenter.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.netcracker.learningcenter.exceptions.ResourceNotFoundException;
 import org.netcracker.learningcenter.model.Report;
 import org.netcracker.learningcenter.service.NLPService;
 import org.netcracker.learningcenter.service.ProducerService;
@@ -81,8 +83,11 @@ public class NLPController {
     }
 
     @KafkaListener(topics = "${kafka.getReport-topic}", groupId = "${kafka.consumer.report-group-id}")
-    public void getDataByRequestId(String requestId) {
-        Optional<Report> data = reportService.findByRequestId(requestId);
+    public void getDataByRequestId(ConsumerRecord<String, String> record) throws JsonProcessingException, ResourceNotFoundException {
+        JsonNode jsonNode = objectMapper.readTree(record.value());
+        JsonNode requestId = jsonNode.path(REQUEST_ID);
+        Validations.checkJsonNode(requestId);
+        Optional<Report> data = reportService.findByRequestId(requestId.asText());
         if (data.isPresent()) {
             producerService.sendReport(objectMapper.valueToTree(data.get()));
         }
