@@ -1,16 +1,15 @@
 package org.netcracker.learningcenter.config;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.netcracker.learningcenter.model.Report;
-import org.netcracker.learningcenter.utils.AnalyticsServiceResponse;
-import org.netcracker.learningcenter.utils.DataCollectorRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.converter.JsonMessageConverter;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
@@ -22,7 +21,7 @@ public class KafkaProducerConfig {
     private String bootstrapAddress;
 
     @Bean
-    public ProducerFactory<String, AnalyticsServiceResponse> ProducerFactory() {
+    public ProducerFactory<String, JsonNode> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -37,28 +36,9 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, Report> reportProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                bootstrapAddress);
-        configProps.put(
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                StringSerializer.class);
-        configProps.put(
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public KafkaTemplate<String, Report> reportKafkaTemplate() {
-        return new KafkaTemplate<>(reportProducerFactory());
-    }
-
-
-    @Bean
-    public KafkaTemplate<String, AnalyticsServiceResponse> KafkaTemplate() {
-        return new KafkaTemplate<>(ProducerFactory());
+    public KafkaTemplate<String, JsonNode> KafkaTemplate() {
+        KafkaTemplate<String, JsonNode> template = new KafkaTemplate<>(producerFactory());
+        template.setMessageConverter(new JsonMessageConverter());
+        return template;
     }
 }
