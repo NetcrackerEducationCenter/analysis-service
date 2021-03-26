@@ -44,4 +44,21 @@ public class ProducerService {
         });
 
     }
+    public void sendReport(JsonNode report) {
+        ListenableFuture<SendResult<String, JsonNode>> future = kafkaTemplate.send(reportTopic, report);
+        future.addCallback(new ListenableFutureCallback<SendResult<String, JsonNode>>() {
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                LOGGER.error("Unable to send message=[{}] due to : {}", report.toString(), throwable.getMessage());
+
+            }
+
+            @Override
+            public void onSuccess(SendResult<String, JsonNode> stringSendResult) {
+                LOGGER.info("Sent message=[{}] with offset=[{}]", report.toString(), stringSendResult.getRecordMetadata().offset());
+            }
+        });
+
+    }
 }

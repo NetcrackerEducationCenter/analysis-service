@@ -84,7 +84,7 @@ public class NLPController {
     public void getDataByRequestId(String requestId) {
         Optional<Report> data = reportService.findByRequestId(requestId);
         if (data.isPresent()) {
-            producerService.sendMessage(objectMapper.valueToTree(data.get()));
+            producerService.sendReport(objectMapper.valueToTree(data.get()));
         }
     }
 }
