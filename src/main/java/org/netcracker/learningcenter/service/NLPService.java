@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.stats.Counter;
@@ -26,21 +27,23 @@ public class NLPService {
     private final ElasticsearchService elasticsearchService;
     private final Pipeline pipeline;
     private final ProducerService producerService;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public NLPService(FrequencyTextAnalysis frequencyTextAnalysis, ReportService reportService, ElasticsearchService elasticsearchService, Pipeline pipeline, ProducerService producerService) {
+    public NLPService(FrequencyTextAnalysis frequencyTextAnalysis, ReportService reportService, ElasticsearchService elasticsearchService, Pipeline pipeline, ProducerService producerService, ObjectMapper objectMapper) {
         this.frequencyTextAnalysis = frequencyTextAnalysis;
         this.reportService = reportService;
         this.elasticsearchService = elasticsearchService;
         this.pipeline = pipeline;
         this.producerService = producerService;
+        this.objectMapper = objectMapper;
     }
 
     public void analyzingDataFromElasticsearch(List<String> keywords, int accuracy, int minSentenceNumbers, int topWordsCount, String requestId) throws Exception {
         List<String> texts = new ArrayList<>();
         Set<String> dataSource = new HashSet<>();
         String startDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
-        producerService.sendMessage(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate));
+        producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate)));
         reportService.setStatus(requestId, Status.IN_PROCESS);
         List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId);
         for (JsonNode node : dataFromElastic) {
@@ -51,7 +54,7 @@ public class NLPService {
         List<String> searchInfo = searchInformation(keywords, texts, accuracy, minSentenceNumbers, topWordsCount);
         String endDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         reportService.updateReport(requestId, searchInfo, Status.COMPLETED, endDate);
-        producerService.sendMessage(new AnalyticsServiceResponse(requestId, Status.COMPLETED, keywords, endDate));
+        producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.COMPLETED, keywords, endDate)));
         reportService.setStatus(requestId, Status.COMPLETED);
     }
 

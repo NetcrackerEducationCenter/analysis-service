@@ -1,11 +1,7 @@
 package org.netcracker.learningcenter.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
 import java.util.Iterator;
-import java.util.List;
 
 
 public class AnalysisUtils {
@@ -21,6 +17,7 @@ public class AnalysisUtils {
     public static final String TOP_WORDS_COUNT_PATH = "topWordsCount";
     public static final String REQUEST_ID = "requestId";
     public static final String SOURCE = "source";
+    public static final String KEYWORDS_LIST = "keywordsList";
 
     public static String getTextFromJsonNode(JsonNode node) {
         String resultText = "";

@@ -1,9 +1,8 @@
 package org.netcracker.learningcenter.service;
 
-import org.apache.log4j.Logger;
-import org.netcracker.learningcenter.model.Report;
-import org.netcracker.learningcenter.utils.AnalyticsServiceResponse;
-import org.netcracker.learningcenter.utils.DataCollectorRequest;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,11 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+
 @Service
 public class ProducerService {
-    private static final Logger LOGGER = Logger.getRootLogger();
-    private final KafkaTemplate<String, AnalyticsServiceResponse> kafkaTemplate;
-    private final KafkaTemplate<String, Report> reportKafkaTemplate;
+    private static final Logger LOGGER = LogManager.getLogger();
+    private final KafkaTemplate<String, JsonNode> kafkaTemplate;
     @Value("${kafka.analysis-topic}")
     private String topic;
     @Value("${kafka.reports-topic}")
@@ -24,40 +23,40 @@ public class ProducerService {
 
 
     @Autowired
-    public ProducerService(KafkaTemplate<String, AnalyticsServiceResponse> kafkaTemplate, KafkaTemplate<String, Report> reportKafkaTemplate) {
+    public ProducerService(KafkaTemplate<String, JsonNode> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
-        this.reportKafkaTemplate = reportKafkaTemplate;
     }
 
-    public void sendMessage(AnalyticsServiceResponse message) {
-        ListenableFuture<SendResult<String, AnalyticsServiceResponse>> future = kafkaTemplate.send(topic, message);
-        future.addCallback(new ListenableFutureCallback<SendResult<String, AnalyticsServiceResponse>>() {
+    public void sendMessage(JsonNode message) {
+        ListenableFuture<SendResult<String, JsonNode>> future = kafkaTemplate.send(topic, message);
+        future.addCallback(new ListenableFutureCallback<SendResult<String, JsonNode>>() {
 
             @Override
             public void onFailure(Throwable throwable) {
-                LOGGER.error("Unable to send message=[ RequestId: " + message.getRequestId() + " status: " + message.getStatus() + "] due to : " + throwable.getMessage());
+                LOGGER.error("Unable to send message=[{}] due to : {}", message.toString(), throwable.getMessage());
 
             }
 
             @Override
-            public void onSuccess(SendResult<String, AnalyticsServiceResponse> stringStringSendResult) {
-                LOGGER.info("Sent message=[ RequestId: " + message.getRequestId() + " status: " + message.getStatus() + "] with offset=[" + stringStringSendResult.getRecordMetadata().offset() + "]");
+            public void onSuccess(SendResult<String, JsonNode> stringSendResult) {
+                LOGGER.info("Sent message=[{}] with offset=[{}]", message.toString(), stringSendResult.getRecordMetadata().offset());
             }
         });
 
     }
+    public void sendReport(JsonNode report) {
+        ListenableFuture<SendResult<String, JsonNode>> future = kafkaTemplate.send(reportTopic, report);
+        future.addCallback(new ListenableFutureCallback<SendResult<String, JsonNode>>() {
 
-    public void sendReport(Report report) {
-        ListenableFuture<SendResult<String, Report>> future = reportKafkaTemplate.send(reportTopic, report);
-        future.addCallback(new ListenableFutureCallback<SendResult<String, Report>>() {
             @Override
             public void onFailure(Throwable throwable) {
-                LOGGER.error("Unable to send message=[Report with requestId : " + report.getRequestId() + "] due to : " + throwable.getMessage());
+                LOGGER.error("Unable to send message=[{}] due to : {}", report.toString(), throwable.getMessage());
+
             }
 
             @Override
-            public void onSuccess(SendResult<String, Report> stringReportSendResult) {
-                LOGGER.info("Sent message=[Report with requestId : " + report.getRequestId() + "] with offset=[" + stringReportSendResult.getRecordMetadata().offset() + "]");
+            public void onSuccess(SendResult<String, JsonNode> stringSendResult) {
+                LOGGER.info("Sent message=[{}] with offset=[{}]", report.toString(), stringSendResult.getRecordMetadata().offset());
             }
         });
 

@@ -7,14 +7,10 @@ import org.netcracker.learningcenter.model.Report;
 import org.netcracker.learningcenter.service.NLPService;
 import org.netcracker.learningcenter.service.ProducerService;
 import org.netcracker.learningcenter.service.ReportService;
-import org.netcracker.learningcenter.utils.DataCollectorRequest;
 import org.netcracker.learningcenter.utils.Status;
 import org.netcracker.learningcenter.utils.Validations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.TopicPartition;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -36,17 +32,28 @@ public class NLPController {
     private final NLPService nlpService;
     private final ReportService reportService;
     private final ProducerService producerService;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public NLPController(NLPService nlpService, ReportService reportService, ProducerService producerService) {
+    public NLPController(NLPService nlpService, ReportService reportService, ProducerService producerService, ObjectMapper objectMapper) {
         this.nlpService = nlpService;
         this.reportService = reportService;
         this.producerService = producerService;
+        this.objectMapper = objectMapper;
     }
 
     @KafkaListener(topics = "${kafka.dc-topic}")
-    public void analyzingDataFromElasticsearch(DataCollectorRequest request) throws Exception {
-        nlpService.analyzingDataFromElasticsearch(request.getKeywords(), ACCURACY, MIN_SENTENSE_NUMBERS, TOP_WORDS_COUNT, request.getRequestId());
+    public void analyzingDataFromElasticsearch(ConsumerRecord<String, String> record) throws Exception {
+        JsonNode jsonNode = objectMapper.readTree(record.value());
+        JsonNode requestId = jsonNode.path(REQUEST_ID);
+        JsonNode keywords = jsonNode.path(KEYWORDS_LIST);
+        Validations.checkJsonNode(requestId, keywords);
+        Iterator<JsonNode> iterator = keywords.elements();
+        List<String> keyWordsList = new ArrayList<>();
+        while (iterator.hasNext()) {
+            keyWordsList.add(iterator.next().asText());
+        }
+        nlpService.analyzingDataFromElasticsearch(keyWordsList, ACCURACY, MIN_SENTENSE_NUMBERS, TOP_WORDS_COUNT, requestId.asText());
     }
 
     @PostMapping(value = "/analysis", produces = "application/json", consumes = "application/json")
@@ -77,7 +84,7 @@ public class NLPController {
     public void getDataByRequestId(String requestId) {
         Optional<Report> data = reportService.findByRequestId(requestId);
         if (data.isPresent()) {
-            producerService.sendReport(data.get());
+            producerService.sendReport(objectMapper.valueToTree(data.get()));
         }
     }
 }
