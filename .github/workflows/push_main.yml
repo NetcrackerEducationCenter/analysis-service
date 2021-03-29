@@ -45,7 +45,7 @@ jobs:
           username: ${{secrets.SSH_USERNAME}}
           passphrase: ${{secrets.PASSPHRASE}}
           script: |
-            cd netcracker/education-center/collect-and-search/analysis-service
+            cd netcracker/collect-and-search/analysis-service
             docker login https://docker.pkg.github.com -u ${{github.repository_owner}} -p ${{secrets.GITHUB_TOKEN}}
             docker container stop $(docker ps -aqf "name=analysis_service")
             docker container rm $(docker ps -aqf "name=analysis_service")
@@ -54,4 +54,4 @@ jobs:
             docker pull docker.pkg.github.com/netcracker-education-center/analysis-service/analysis_service:latest
             docker tag docker.pkg.github.com/netcracker-education-center/analysis-service/analysis_service:latest netcracker/analysis_service:latest
             # -d means that container starts in detached mode or in the background
-            docker run -m 128m -d --name analysis_service -p 5005:5005 -p 9125:9125 netcracker/analysis_service:latest -v netcracker/education-center/collect-and-search/analysis-service/log:/log
+            docker run -d --name analysis_service -p 5005:5005 -p 9125:9125 netcracker/analysis_service:latest -v netcracker/collect-and-search/analysis-service/log:/log
