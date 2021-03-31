@@ -21,7 +21,7 @@ public class ElasticsearchService {
                                 @Value("${port1}") String port1,
                                 @Value("${port2}") String port2) {
         properties = new Properties();
-        properties.setProperty("eshostname", hostname);
+        properties.setProperty("hostname", hostname);
         properties.setProperty("scheme", scheme);
         properties.setProperty("port1", port1);
         properties.setProperty("port2", port2);
