@@ -16,8 +16,6 @@ import org.netcracker.learningcenter.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static org.netcracker.learningcenter.utils.AnalysisUtils.SOURCE;
-
 
 @Service
 public class NLPService {
@@ -40,18 +38,13 @@ public class NLPService {
     }
 
     public void analyzingDataFromElasticsearch(List<String> keywords, int accuracy, int minSentenceNumbers, int topWordsCount, String requestId) throws Exception {
-        List<String> texts = new ArrayList<>();
-        Set<String> dataSource = new HashSet<>();
         String startDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate)));
         reportService.setStatus(requestId, Status.IN_PROCESS);
         List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId);
-        for (JsonNode node : dataFromElastic) {
-            dataSource.add(node.path(SOURCE).asText());
-            texts.add(AnalysisUtils.getTextFromJsonNode(node));
-        }
-        reportService.createReport(keywords, requestId, dataSource, Status.IN_PROCESS);
-        List<String> searchInfo = searchInformation(keywords, texts, accuracy, minSentenceNumbers, topWordsCount);
+        List<AnalysisDataModel> dataModels = AnalysisUtils.jsonToAnalysisDataModel(dataFromElastic);
+        reportService.createReport(keywords, requestId, dataModels, Status.IN_PROCESS);
+        List<AnalysisDataModel> searchInfo = searchInformation(keywords, dataModels, accuracy, minSentenceNumbers, topWordsCount);
         String endDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         reportService.updateReport(requestId, searchInfo, Status.COMPLETED, endDate);
         producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.COMPLETED, keywords, endDate)));
@@ -61,27 +54,27 @@ public class NLPService {
     /**
      * Selects main information from a given list of texts containing words from keywords list
      *
-     * @param keywords    a list of words that should be contained in the analyzed texts
-     * @param searchTexts a list of texts in which the requested information is searched
+     * @param keywords   a list of words that should be contained in the analyzed texts
+     * @param dataModels list of objects containing text for analysis
      * @return list of selected main information from texts
      */
-    public List<String> searchInformation(List<String> keywords, List<String> searchTexts, int accuracy, int minSentenceNumbers, int topWordsCount) {
-        List<String> foundInfo = new ArrayList<>();
-        for (String text : searchTexts) {
-            Annotation annotation = pipeline.getStanfordCoreNLP().process(text);
+
+    public List<AnalysisDataModel> searchInformation(List<String> keywords, List<AnalysisDataModel> dataModels, int accuracy, int minSentenceNumbers, int topWordsCount) {
+        List<AnalysisDataModel> foundInfo = new ArrayList<>();
+        for (AnalysisDataModel model : dataModels) {
+            Annotation annotation = pipeline.getStanfordCoreNLP().process(model.getText());
             List<CoreMap> sentenses = annotation.get(CoreAnnotations.SentencesAnnotation.class);
             List<String> topWords = Counters.topKeys(frequencyTextAnalysis.termFrequency(sentenses), topWordsCount);
             if (containsKeywords(topWords, keywords)) {
                 if (sentenses.size() <= minSentenceNumbers) {
-                    foundInfo.add(text);
+                    foundInfo.add(model);
                 } else {
-                    foundInfo.add(findImportantInfo(sentenses, accuracy));
+                    foundInfo.add(new AnalysisDataModel(model.getDataSource(), findImportantInfo(sentenses, accuracy)));
                 }
             }
         }
         return foundInfo;
     }
-
 
     private boolean containsKeywords(List<String> topWords, List<String> keywords) {
         for (String word : keywords) {

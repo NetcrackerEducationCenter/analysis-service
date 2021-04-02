@@ -2,6 +2,7 @@ package org.netcracker.learningcenter.service;
 
 import org.netcracker.learningcenter.model.Report;
 import org.netcracker.learningcenter.repository.ReportRepository;
+import org.netcracker.learningcenter.utils.AnalysisDataModel;
 import org.netcracker.learningcenter.utils.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,19 +32,19 @@ public class ReportService {
         return reportRepository.findAll();
     }
 
-    public void createReport(List<String> keywords, String requestId, Set<String> dataSource, Status status) {
+    public void createReport(List<String> keywords, String requestId, List<AnalysisDataModel> dataModels, Status status) {
         Report report = new Report();
         report.setKeywords(keywords);
         report.setStatus(status);
         report.setRequestId(requestId);
-        report.setDataSource(dataSource);
+        report.setDataModels(dataModels);
         reportRepository.save(report);
     }
 
-    public void updateReport(String id, List<String> text, Status status, String date) {
+    public void updateReport(String id, List<AnalysisDataModel> dataModels, Status status, String date) {
         Optional<Report> report = reportRepository.findByRequestId(id);
         if (report.isPresent()) {
-            report.get().setText(text);
+            report.get().setDataModels(dataModels);
             report.get().setStatus(status);
             report.get().setDate(date);
             reportRepository.save(report.get());
