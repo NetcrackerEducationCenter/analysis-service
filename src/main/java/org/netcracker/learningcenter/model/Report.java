@@ -1,11 +1,11 @@
 package org.netcracker.learningcenter.model;
 
 import nonapi.io.github.classgraph.json.Id;
+import org.netcracker.learningcenter.utils.AnalysisDataModel;
 import org.netcracker.learningcenter.utils.Status;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
-import java.util.Set;
 
 @Document
 public class Report {
@@ -13,20 +13,18 @@ public class Report {
     private String id;
     private String requestId;
     private String date;
-    private Set<String> dataSource;
+    private List<AnalysisDataModel> dataModels;
     private Status status;
     private List<String> keywords;
-    private List<String> text;
 
     public Report() {
     }
 
-    public Report(String requestId, String date, List<String> keywords, List<String> text, Set<String> dataSource, Status status) {
+    public Report(String requestId, String date, List<String> keywords, List<AnalysisDataModel> dataModel,Status status) {
         this.requestId = requestId;
         this.date = date;
         this.keywords = keywords;
-        this.text = text;
-        this.dataSource = dataSource;
+        this.dataModels = dataModel;
         this.status = status;
     }
 
@@ -54,24 +52,12 @@ public class Report {
         this.keywords = keywords;
     }
 
-    public List<String> getText() {
-        return text;
+    public List<AnalysisDataModel> getDataModels() {
+        return dataModels;
     }
 
-    public void setText(List<String> text) {
-        this.text = text;
-    }
-
-    public void addToText(String text) {
-        this.text.add(text);
-    }
-
-    public Set<String> getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(Set<String> dataSource) {
-        this.dataSource = dataSource;
+    public void setDataModels(List<AnalysisDataModel> dataModels) {
+        this.dataModels = dataModels;
     }
 
     public Status getStatus() {
@@ -88,7 +74,6 @@ public class Report {
                 "requestId='" + requestId + '\'' +
                 ", date='" + date + '\'' +
                 ", keywords=" + keywords +
-                ", text='" + text + '\'' +
                 '}';
     }
 }

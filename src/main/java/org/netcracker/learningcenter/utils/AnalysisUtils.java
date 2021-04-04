@@ -1,7 +1,10 @@
 package org.netcracker.learningcenter.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class AnalysisUtils {
@@ -19,23 +22,29 @@ public class AnalysisUtils {
     public static final String SOURCE = "source";
     public static final String KEYWORDS_LIST = "keywordsList";
 
-    public static String getTextFromJsonNode(JsonNode node) {
-        String resultText = "";
-        switch (node.path(TYPE).asText()) {
-            case "FILE":
-                resultText = node.path(TEXT).asText();
-                break;
-            case "TICKET":
-                StringBuilder sb = new StringBuilder();
-                sb.append(node.path(ISSUE_TITLE).asText()).append("\n");
-                sb.append(node.path(ISSUE_BODY).asText()).append("\n");
-                Iterator<JsonNode> iterator = node.path(COMMENTS).elements();
-                while (iterator.hasNext()) {
-                    sb.append(iterator.next().asText()).append("\n");
-                }
-                resultText = sb.toString();
-                break;
+    public static List<AnalysisDataModel> jsonToAnalysisDataModel(List<JsonNode> dataFromElastic) {
+        List<AnalysisDataModel> dataModelList = new ArrayList<>();
+        for (JsonNode node : dataFromElastic) {
+            AnalysisDataModel dataModel = new AnalysisDataModel();
+            dataModel.setDataSource(node.path(SOURCE).asText());
+            String resultText = "";
+            switch (node.path(TYPE).asText()) {
+                case "FILE":
+                    resultText = node.path(TEXT).asText();
+                    break;
+                case "TICKET":
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(node.path(ISSUE_TITLE).asText()).append("\n");
+                    sb.append(node.path(ISSUE_BODY).asText()).append("\n");
+                    Iterator<JsonNode> iterator = node.path(COMMENTS).elements();
+                    while (iterator.hasNext()) {
+                        sb.append(iterator.next().asText()).append("\n");
+                    }
+                    resultText = sb.toString();
+                    break;
+            }
+            dataModel.setText(resultText);
         }
-        return resultText;
+        return dataModelList;
     }
 }
