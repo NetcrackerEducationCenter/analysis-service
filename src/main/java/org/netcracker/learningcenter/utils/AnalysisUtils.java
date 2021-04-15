@@ -8,6 +8,7 @@ import java.util.List;
 
 
 public class AnalysisUtils {
+
     private static final String TYPE = "type";
     private static final String COMMENTS = "comments";
     private static final String TEXT = "text";
@@ -21,6 +22,7 @@ public class AnalysisUtils {
     public static final String REQUEST_ID = "requestId";
     public static final String SOURCE = "source";
     public static final String KEYWORDS_LIST = "keywordsList";
+    public static final String USER_ID = "userId";
 
     public static List<AnalysisDataModel> jsonToAnalysisDataModel(List<JsonNode> dataFromElastic) {
         List<AnalysisDataModel> dataModelList = new ArrayList<>();
