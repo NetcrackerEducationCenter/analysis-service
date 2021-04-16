@@ -12,6 +12,7 @@ public class Report {
     @Id
     private String id;
     private String requestId;
+    private String userId;
     private String date;
     private List<AnalysisDataModel> dataModels;
     private Status status;
@@ -26,6 +27,14 @@ public class Report {
         this.keywords = keywords;
         this.dataModels = dataModel;
         this.status = status;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getRequestId() {

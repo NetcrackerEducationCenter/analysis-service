@@ -47,13 +47,13 @@ public class NLPService {
         this.objectMapper = objectMapper;
     }
 
-    public void analyzingDataFromElasticsearch(List<String> keywords,String requestId) throws Exception {
+    public void analyzingDataFromElasticsearch(List<String> keywords, String requestId, String userId) throws Exception {
         String startDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate)));
         reportService.setStatus(requestId, Status.IN_PROCESS);
         List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId);
         List<AnalysisDataModel> dataModels = AnalysisUtils.jsonToAnalysisDataModel(dataFromElastic);
-        reportService.createReport(keywords, requestId, dataModels, Status.IN_PROCESS);
+        reportService.createReport(keywords, requestId, dataModels, userId, Status.IN_PROCESS);
         List<AnalysisDataModel> searchInfo = searchInformation(keywords, dataModels, ACCURACY, MIN_SENTENSE_NUMBERS, TOP_WORDS_COUNT);
         String endDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         reportService.updateReport(requestId, searchInfo, Status.COMPLETED, endDate);

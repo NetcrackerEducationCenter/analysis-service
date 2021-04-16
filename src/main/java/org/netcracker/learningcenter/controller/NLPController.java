@@ -46,20 +46,21 @@ public class NLPController {
         while (iterator.hasNext()) {
             keyWordsList.add(iterator.next().asText());
         }
-        nlpService.analyzingDataFromElasticsearch(keyWordsList,requestId.asText());
+        nlpService.analyzingDataFromElasticsearch(keyWordsList,requestId.asText(),userId.asText());
     }
 
     @PostMapping(value = "/analysis", produces = "application/json", consumes = "application/json")
     public void analysisInformation(@RequestBody JsonNode jsonNode) throws Exception {
         JsonNode keyWordsNode = jsonNode.path(KEY_WORDS_PATH);
         JsonNode requestId = jsonNode.path(REQUEST_ID);
-        Validations.checkJsonNode(keyWordsNode, requestId);
+        JsonNode userId = jsonNode.path(USER_ID);
+        Validations.checkJsonNode(keyWordsNode, requestId,userId);
         Iterator<JsonNode> iterator = keyWordsNode.elements();
         List<String> keyWordsList = new ArrayList<>();
         while (iterator.hasNext()) {
             keyWordsList.add(iterator.next().asText());
         }
-        nlpService.analyzingDataFromElasticsearch(keyWordsList,requestId.asText());
+        nlpService.analyzingDataFromElasticsearch(keyWordsList,requestId.asText(), userId.asText());
     }
 
     @GetMapping("/status/{requestId}")
