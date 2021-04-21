@@ -79,7 +79,7 @@ public class NLPService {
                 if (sentenses.size() <= minSentenceNumbers) {
                     foundInfo.add(model);
                 } else {
-                    foundInfo.add(new AnalysisDataModel(model.getDataSource(), findImportantInfo(sentenses, accuracy)));
+                    foundInfo.add(new AnalysisDataModel(model.getDataSource(), findImportantInfo(sentenses, accuracy), model.getModificationDate()));
                 }
             }
         }

@@ -2,8 +2,8 @@ package org.netcracker.learningcenter.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.netcracker.educationcenter.elasticsearch.connection.Connection;
-import org.netcracker.educationcenter.elasticsearch.search.FTPFileObjectSearch;
-import org.netcracker.educationcenter.elasticsearch.search.JiraIssueSearch;
+import org.netcracker.educationcenter.elasticsearch.search.DocumentModelSearch;
+import org.netcracker.educationcenter.elasticsearch.search.DocumentSearch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +13,20 @@ import java.util.Properties;
 
 @Service
 public class ElasticsearchService {
+    /**
+     * Elasticsearch document index for Jira-issues
+     */
+    public static final String JIRA_INDEX = "jiraissues";
+
+    /**
+     * Elasticsearch document index for FTP-server files
+     */
+    public static final String FTP_INDEX = "ftpfileobjects";
+
+    /**
+     * Elasticsearch document index for Confluence-pages
+     */
+    public static final String CONFLUENCE_INDEX = "confluencepages";
     private static final String REQUEST_ID = "requestId";
     private final Properties properties;
 
@@ -31,10 +45,10 @@ public class ElasticsearchService {
         List<JsonNode> data = new ArrayList<>();
         try (Connection connection = new Connection(properties)) {
             connection.makeConnection();
-            FTPFileObjectSearch documentSearch = new FTPFileObjectSearch(connection);
-            JiraIssueSearch jiraIssueSearch = new JiraIssueSearch(connection);
-            data.addAll(documentSearch.searchByFieldValue(id, REQUEST_ID));
-            data.addAll(jiraIssueSearch.searchByFieldValue(id, REQUEST_ID));
+            DocumentSearch search = new DocumentModelSearch(connection);
+            data.addAll(search.searchByFieldValue(id, REQUEST_ID,JIRA_INDEX));
+            data.addAll(search.searchByFieldValue(id, REQUEST_ID,FTP_INDEX));
+            data.addAll(search.searchByFieldValue(id, REQUEST_ID,CONFLUENCE_INDEX));
         }
         return data;
     }
