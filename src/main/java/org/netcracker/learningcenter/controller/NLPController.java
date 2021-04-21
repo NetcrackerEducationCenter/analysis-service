@@ -21,16 +21,6 @@ import static org.netcracker.learningcenter.utils.AnalysisUtils.*;
 
 @RestController
 public class NLPController {
-    /**
-     * Number of decimal places to round the average sentence weight
-     */
-    private static final int ACCURACY = 3;
-    /**
-     * The minimum number of sentences at which the text will not be analyzed,
-     * but the entire text will be returned
-     */
-    private static final int MIN_SENTENSE_NUMBERS = 10;
-    private static final int TOP_WORDS_COUNT = 10;
     private final NLPService nlpService;
     private final ReportService reportService;
     private final ProducerService producerService;
@@ -49,32 +39,28 @@ public class NLPController {
         JsonNode jsonNode = objectMapper.readTree(record.value());
         JsonNode requestId = jsonNode.path(REQUEST_ID);
         JsonNode keywords = jsonNode.path(KEYWORDS_LIST);
-        Validations.checkJsonNode(requestId, keywords);
+        JsonNode userId = jsonNode.path(USER_ID);
+        Validations.checkJsonNode(requestId, keywords,userId);
         Iterator<JsonNode> iterator = keywords.elements();
         List<String> keyWordsList = new ArrayList<>();
         while (iterator.hasNext()) {
             keyWordsList.add(iterator.next().asText());
         }
-        nlpService.analyzingDataFromElasticsearch(keyWordsList, ACCURACY, MIN_SENTENSE_NUMBERS, TOP_WORDS_COUNT, requestId.asText());
+        nlpService.analyzingDataFromElasticsearch(keyWordsList,requestId.asText(),userId.asText());
     }
 
     @PostMapping(value = "/analysis", produces = "application/json", consumes = "application/json")
     public void analysisInformation(@RequestBody JsonNode jsonNode) throws Exception {
         JsonNode keyWordsNode = jsonNode.path(KEY_WORDS_PATH);
-        JsonNode accuracyNode = jsonNode.path(ALANALYSIS_PARAM_PATH).path(ACCURACY_PATH);
-        JsonNode sentenceNumbersNode = jsonNode.path(ALANALYSIS_PARAM_PATH).path(MIN_SENTENSE_NUMBERS_PATH);
-        JsonNode topWordCountNode = jsonNode.path(ALANALYSIS_PARAM_PATH).path(TOP_WORDS_COUNT_PATH);
         JsonNode requestId = jsonNode.path(REQUEST_ID);
-        Validations.checkJsonNode(keyWordsNode, requestId);
+        JsonNode userId = jsonNode.path(USER_ID);
+        Validations.checkJsonNode(keyWordsNode, requestId,userId);
         Iterator<JsonNode> iterator = keyWordsNode.elements();
         List<String> keyWordsList = new ArrayList<>();
         while (iterator.hasNext()) {
             keyWordsList.add(iterator.next().asText());
         }
-        int accuracy = accuracyNode.isMissingNode() ? ACCURACY : accuracyNode.asInt();
-        int sentenceNumbers = sentenceNumbersNode.isMissingNode() ? MIN_SENTENSE_NUMBERS : sentenceNumbersNode.asInt();
-        int topWordCount = topWordCountNode.isMissingNode() ? TOP_WORDS_COUNT : topWordCountNode.asInt();
-        nlpService.analyzingDataFromElasticsearch(keyWordsList, accuracy, sentenceNumbers, topWordCount, requestId.asText());
+        nlpService.analyzingDataFromElasticsearch(keyWordsList,requestId.asText(), userId.asText());
     }
 
     @GetMapping("/status/{requestId}")

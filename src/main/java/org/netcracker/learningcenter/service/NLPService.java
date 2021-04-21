@@ -19,6 +19,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NLPService {
+    /**
+     * Number of decimal places to round the average sentence weight
+     */
+    private static final int ACCURACY = 3;
+    /**
+     * The minimum number of sentences at which the text will not be analyzed,
+     * but the entire text will be returned
+     */
+    private static final int MIN_SENTENSE_NUMBERS = 10;
+    private static final int TOP_WORDS_COUNT = 10;
 
     private final FrequencyTextAnalysis frequencyTextAnalysis;
     private final ReportService reportService;
@@ -37,14 +47,14 @@ public class NLPService {
         this.objectMapper = objectMapper;
     }
 
-    public void analyzingDataFromElasticsearch(List<String> keywords, int accuracy, int minSentenceNumbers, int topWordsCount, String requestId) throws Exception {
+    public void analyzingDataFromElasticsearch(List<String> keywords, String requestId, String userId) throws Exception {
         String startDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate)));
         reportService.setStatus(requestId, Status.IN_PROCESS);
         List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId);
         List<AnalysisDataModel> dataModels = AnalysisUtils.jsonToAnalysisDataModel(dataFromElastic);
-        reportService.createReport(keywords, requestId, dataModels, Status.IN_PROCESS);
-        List<AnalysisDataModel> searchInfo = searchInformation(keywords, dataModels, accuracy, minSentenceNumbers, topWordsCount);
+        reportService.createReport(keywords, requestId, dataModels, userId, Status.IN_PROCESS);
+        List<AnalysisDataModel> searchInfo = searchInformation(keywords, dataModels, ACCURACY, MIN_SENTENSE_NUMBERS, TOP_WORDS_COUNT);
         String endDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         reportService.updateReport(requestId, searchInfo, Status.COMPLETED, endDate);
         producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.COMPLETED, keywords, endDate)));
@@ -69,7 +79,7 @@ public class NLPService {
                 if (sentenses.size() <= minSentenceNumbers) {
                     foundInfo.add(model);
                 } else {
-                    foundInfo.add(new AnalysisDataModel(model.getDataSource(), findImportantInfo(sentenses, accuracy)));
+                    foundInfo.add(new AnalysisDataModel(model.getDataSource(), findImportantInfo(sentenses, accuracy), model.getModificationDate()));
                 }
             }
         }
