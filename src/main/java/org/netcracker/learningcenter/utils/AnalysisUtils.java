@@ -10,8 +10,8 @@ import java.util.List;
 public class AnalysisUtils {
 
     private static final String COMMENTS = "comments";
-    private static final String TITLE = "issueTitle";
-    private static final String BODY = "issueBody";
+    private static final String TITLE = "title";
+    private static final String BODY = "body";
     public static final String KEY_WORDS_PATH = "keyWords";
     public static final String ALANALYSIS_PARAM_PATH = "analysisParam";
     public static final String ACCURACY_PATH = "accuracy";
@@ -30,13 +30,14 @@ public class AnalysisUtils {
             dataModel.setDataSource(node.path(SOURCE).asText());
             dataModel.setModificationDate(node.path(MODIFICATION_DATE).asText());
             StringBuilder sb = new StringBuilder();
-                    sb.append(node.path(TITLE).asText()).append(System.lineSeparator());
-                    sb.append(node.path(BODY).asText()).append(System.lineSeparator());
-                    Iterator<JsonNode> iterator = node.path(COMMENTS).elements();
-                    while (iterator.hasNext()) {
-                        sb.append(iterator.next().asText()).append(System.lineSeparator());
-                    }
-                    dataModel.setText(sb.toString());
+            sb.append(node.path(TITLE).asText()).append(System.lineSeparator());
+            sb.append(node.path(BODY).asText()).append(System.lineSeparator());
+            Iterator<JsonNode> iterator = node.path(COMMENTS).elements();
+            while (iterator.hasNext()) {
+                sb.append(iterator.next().asText()).append(System.lineSeparator());
+            }
+            dataModel.setText(sb.toString());
+            dataModelList.add(dataModel);
         }
         return dataModelList;
     }
