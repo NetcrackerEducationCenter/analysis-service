@@ -1,5 +1,7 @@
 package org.netcracker.learningcenter.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.netcracker.learningcenter.model.Report;
 import org.netcracker.learningcenter.repository.ReportRepository;
 import org.netcracker.learningcenter.utils.AnalysisDataModel;
@@ -11,6 +13,7 @@ import java.util.*;
 
 @Service
 public class ReportService {
+    private static final Logger LOGGER = LogManager.getLogger();
     private final ReportRepository reportRepository;
     private Map<String, Status> statuses;
 
@@ -32,14 +35,14 @@ public class ReportService {
         return reportRepository.findAll();
     }
 
-    public void createReport(List<String> keywords, String requestId, List<AnalysisDataModel> dataModels, String userId, Status status) {
+    public void createReport(List<String> keywords, String requestId, String userId, Status status) {
         Report report = new Report();
         report.setKeywords(keywords);
         report.setStatus(status);
         report.setRequestId(requestId);
-        report.setDataModels(dataModels);
         report.setUserId(userId);
         reportRepository.save(report);
+        LOGGER.info("Empty report generated on request {}", requestId);
     }
 
     public void updateReport(String id, List<AnalysisDataModel> dataModels, Status status, String date) {
@@ -49,6 +52,7 @@ public class ReportService {
             report.get().setStatus(status);
             report.get().setDate(date);
             reportRepository.save(report.get());
+            LOGGER.info("Updated report with id {}.Added {} dataModels to report.", id, dataModels.size());
         }
 
     }

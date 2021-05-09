@@ -4,6 +4,7 @@ public class AnalysisDataModel {
     private String modificationDate;
     private String dataSource;
     private String text;
+    private String title;
 
     public AnalysisDataModel() {
     }
@@ -36,5 +37,13 @@ public class AnalysisDataModel {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

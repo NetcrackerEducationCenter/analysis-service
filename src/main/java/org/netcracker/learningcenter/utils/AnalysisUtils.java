@@ -28,9 +28,9 @@ public class AnalysisUtils {
         for (JsonNode node : dataFromElastic) {
             AnalysisDataModel dataModel = new AnalysisDataModel();
             dataModel.setDataSource(node.path(SOURCE).asText());
+            dataModel.setTitle(node.path(TITLE).asText());
             dataModel.setModificationDate(node.path(MODIFICATION_DATE).asText());
             StringBuilder sb = new StringBuilder();
-            sb.append(node.path(TITLE).asText()).append(System.lineSeparator());
             sb.append(node.path(BODY).asText()).append(System.lineSeparator());
             Iterator<JsonNode> iterator = node.path(COMMENTS).elements();
             while (iterator.hasNext()) {
