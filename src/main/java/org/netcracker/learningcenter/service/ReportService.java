@@ -32,12 +32,11 @@ public class ReportService {
         return reportRepository.findAll();
     }
 
-    public void createReport(List<String> keywords, String requestId, List<AnalysisDataModel> dataModels, String userId, Status status) {
+    public void createReport(List<String> keywords, String requestId,String userId, Status status) {
         Report report = new Report();
         report.setKeywords(keywords);
         report.setStatus(status);
         report.setRequestId(requestId);
-        report.setDataModels(dataModels);
         report.setUserId(userId);
         reportRepository.save(report);
     }
