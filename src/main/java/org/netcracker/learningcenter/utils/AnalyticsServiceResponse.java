@@ -56,4 +56,12 @@ public class AnalyticsServiceResponse {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 }

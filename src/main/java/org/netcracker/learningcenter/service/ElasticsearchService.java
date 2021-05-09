@@ -1,6 +1,8 @@
 package org.netcracker.learningcenter.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.netcracker.educationcenter.elasticsearch.connection.Connection;
 import org.netcracker.educationcenter.elasticsearch.search.DocumentModelSearch;
 import org.netcracker.educationcenter.elasticsearch.search.DocumentSearch;
@@ -28,6 +30,7 @@ public class ElasticsearchService {
      */
     public static final String CONFLUENCE_INDEX = "confluencepages";
     private static final String REQUEST_ID = "requestId";
+    private static final Logger LOGGER = LogManager.getLogger();
     private final Properties properties;
 
     public ElasticsearchService(@Value("${eshostname}") String hostname,
@@ -42,14 +45,16 @@ public class ElasticsearchService {
     }
 
     public List<JsonNode> getDataByRequestId(String id) throws Exception {
+        LOGGER.info("Search by id {} started", id);
         List<JsonNode> data = new ArrayList<>();
         try (Connection connection = new Connection(properties)) {
             connection.makeConnection();
             DocumentSearch search = new DocumentModelSearch(connection);
-            data.addAll(search.searchByFieldValue(id, REQUEST_ID,JIRA_INDEX));
-            data.addAll(search.searchByFieldValue(id, REQUEST_ID,FTP_INDEX));
-            data.addAll(search.searchByFieldValue(id, REQUEST_ID,CONFLUENCE_INDEX));
+            data.addAll(search.searchByFieldValue(id, REQUEST_ID, JIRA_INDEX));
+            data.addAll(search.searchByFieldValue(id, REQUEST_ID, FTP_INDEX));
+            data.addAll(search.searchByFieldValue(id, REQUEST_ID, CONFLUENCE_INDEX));
         }
+        LOGGER.info("{} records found by id {}", data.size(), id);
         return data;
     }
 }
