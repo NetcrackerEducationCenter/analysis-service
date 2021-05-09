@@ -7,6 +7,7 @@ public class AnalyticsServiceResponse {
     private Status status;
     private List<String> keywords;
     private String date;
+    private String userId;
 
     public AnalyticsServiceResponse() {
     }
@@ -16,11 +17,12 @@ public class AnalyticsServiceResponse {
         this.status = status;
     }
 
-    public AnalyticsServiceResponse(String requestId, Status status, List<String> keywords, String date) {
+    public AnalyticsServiceResponse(String requestId, Status status, List<String> keywords, String date, String userId) {
         this.requestId = requestId;
         this.status = status;
         this.keywords = keywords;
         this.date = date;
+        this.userId = userId;
     }
 
     public List<String> getKeywords() {
