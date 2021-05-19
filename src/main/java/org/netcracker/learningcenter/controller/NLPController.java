@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.netcracker.learningcenter.exceptions.ResourceNotFoundException;
 import org.netcracker.learningcenter.model.Report;
+import org.netcracker.learningcenter.service.ElasticsearchService;
 import org.netcracker.learningcenter.service.NLPService;
 import org.netcracker.learningcenter.service.ProducerService;
 import org.netcracker.learningcenter.service.ReportService;
+import org.netcracker.learningcenter.utils.AnalysisUtils;
 import org.netcracker.learningcenter.utils.Status;
 import org.netcracker.learningcenter.utils.Validations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +26,15 @@ public class NLPController {
     private final NLPService nlpService;
     private final ReportService reportService;
     private final ProducerService producerService;
+    private final ElasticsearchService elasticsearchService;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public NLPController(NLPService nlpService, ReportService reportService, ProducerService producerService, ObjectMapper objectMapper) {
+    public NLPController(NLPService nlpService, ReportService reportService, ProducerService producerService, ElasticsearchService elasticsearchService, ObjectMapper objectMapper) {
         this.nlpService = nlpService;
         this.reportService = reportService;
         this.producerService = producerService;
+        this.elasticsearchService = elasticsearchService;
         this.objectMapper = objectMapper;
     }
 
@@ -39,28 +43,17 @@ public class NLPController {
         JsonNode jsonNode = objectMapper.readTree(record.value());
         JsonNode requestId = jsonNode.path(REQUEST_ID);
         JsonNode keywords = jsonNode.path(KEYWORDS_LIST);
+        JsonNode selectedSources = jsonNode.path(SELECTED_SOURCES);
         JsonNode userId = jsonNode.path(USER_ID);
-        Validations.checkJsonNode(requestId, keywords,userId);
-        Iterator<JsonNode> iterator = keywords.elements();
-        List<String> keyWordsList = new ArrayList<>();
-        while (iterator.hasNext()) {
-            keyWordsList.add(iterator.next().asText());
-        }
-        nlpService.analyzingDataFromElasticsearch(keyWordsList,requestId.asText(),userId.asText());
+        Validations.checkJsonNode(requestId, keywords, userId);
+        List<String> keyWordsList = AnalysisUtils.jsonNodeToStringList(keywords);
+        List<String> sourcesList = AnalysisUtils.jsonNodeToStringList(selectedSources);
+        nlpService.analyzingDataFromElasticsearch(keyWordsList, sourcesList, requestId.asText(), userId.asText());
     }
 
-    @PostMapping(value = "/analysis", produces = "application/json", consumes = "application/json")
-    public void analysisInformation(@RequestBody JsonNode jsonNode) throws Exception {
-        JsonNode keyWordsNode = jsonNode.path(KEY_WORDS_PATH);
-        JsonNode requestId = jsonNode.path(REQUEST_ID);
-        JsonNode userId = jsonNode.path(USER_ID);
-        Validations.checkJsonNode(keyWordsNode, requestId,userId);
-        Iterator<JsonNode> iterator = keyWordsNode.elements();
-        List<String> keyWordsList = new ArrayList<>();
-        while (iterator.hasNext()) {
-            keyWordsList.add(iterator.next().asText());
-        }
-        nlpService.analyzingDataFromElasticsearch(keyWordsList,requestId.asText(), userId.asText());
+    @GetMapping("/dataForAnalysis/{requestId}")
+    public List<JsonNode> getDataForAnalysis(@PathVariable String requestId) throws Exception {
+        return elasticsearchService.getDataByRequestId(requestId);
     }
 
     @GetMapping("/status/{requestId}")

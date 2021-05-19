@@ -17,6 +17,7 @@ public class Report {
     private List<AnalysisDataModel> dataModels;
     private Status status;
     private List<String> keywords;
+    private List<String> sources;
 
     public Report() {
     }
@@ -75,6 +76,14 @@ public class Report {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public List<String> getSources() {
+        return sources;
+    }
+
+    public void setSources(List<String> sources) {
+        this.sources = sources;
     }
 
     @Override

@@ -49,10 +49,10 @@ public class NLPService {
         this.objectMapper = objectMapper;
     }
 
-    public void analyzingDataFromElasticsearch(List<String> keywords, String requestId, String userId) throws Exception {
+    public void analyzingDataFromElasticsearch(List<String> keywords, List<String> sources, String requestId, String userId) throws Exception {
         String startDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate, userId)));
-        reportService.createReport(keywords, requestId, userId, Status.IN_PROCESS);
+        reportService.createReport(keywords, sources, requestId, userId, Status.IN_PROCESS);
         List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId);
         List<AnalysisDataModel> dataModels = AnalysisUtils.jsonToAnalysisDataModel(dataFromElastic);
         List<AnalysisDataModel> searchInfo = searchInformation(keywords, dataModels, ACCURACY, MIN_SENTENSE_NUMBERS, TOP_WORDS_COUNT);
