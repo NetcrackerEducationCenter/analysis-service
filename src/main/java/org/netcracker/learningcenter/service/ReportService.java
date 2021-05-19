@@ -35,12 +35,13 @@ public class ReportService {
         return reportRepository.findAll();
     }
 
-    public void createReport(List<String> keywords, String requestId, String userId, Status status) {
+    public void createReport(List<String> keywords, List<String> sources, String requestId, String userId, Status status) {
         Report report = new Report();
         report.setKeywords(keywords);
         report.setStatus(status);
         report.setRequestId(requestId);
         report.setUserId(userId);
+        report.setSources(sources);
         reportRepository.save(report);
         LOGGER.info("Empty report generated on request {}", requestId);
     }

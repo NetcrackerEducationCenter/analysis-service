@@ -20,6 +20,7 @@ public class AnalysisUtils {
     public static final String REQUEST_ID = "requestId";
     public static final String SOURCE = "source";
     public static final String KEYWORDS_LIST = "keywordsList";
+    public static final String SELECTED_SOURCES = "selectedSources";
     public static final String USER_ID = "userId";
     public static final String MODIFICATION_DATE = "modificationDate";
 
@@ -40,5 +41,14 @@ public class AnalysisUtils {
             dataModelList.add(dataModel);
         }
         return dataModelList;
+    }
+
+    public static List<String> jsonNodeToStringList(JsonNode node) {
+        Iterator<JsonNode> iterator = node.elements();
+        List<String> resultList = new ArrayList<>();
+        while (iterator.hasNext()) {
+            resultList.add(iterator.next().asText());
+        }
+        return resultList;
     }
 }
