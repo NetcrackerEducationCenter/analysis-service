@@ -53,6 +53,10 @@ public class NLPService {
         String startDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate, userId)));
         reportService.createReport(keywords, sources, requestId, userId, Status.IN_PROCESS);
+        long range = 20000;
+        long startTime = System.currentTimeMillis();
+        while(System.currentTimeMillis() - startTime < range){
+        }
         List<JsonNode> dataFromElastic = elasticsearchService.getDataByRequestId(requestId);
         List<AnalysisDataModel> dataModels = AnalysisUtils.jsonToAnalysisDataModel(dataFromElastic);
         List<AnalysisDataModel> searchInfo = searchInformation(keywords, dataModels, ACCURACY, MIN_SENTENSE_NUMBERS, TOP_WORDS_COUNT);
