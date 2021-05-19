@@ -53,7 +53,7 @@ public class NLPService {
         String startDate = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
         producerService.sendMessage(objectMapper.valueToTree(new AnalyticsServiceResponse(requestId, Status.IN_PROCESS, keywords, startDate, userId)));
         reportService.createReport(keywords, sources, requestId, userId, Status.IN_PROCESS);
-        long range = 20000;
+        long range = 5000;
         long startTime = System.currentTimeMillis();
         while(System.currentTimeMillis() - startTime < range){
         }
